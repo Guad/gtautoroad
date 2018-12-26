@@ -80,6 +80,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackBuffer.cs" />
     <Compile Include="DirectXHook\Exceptions.cs" />
     <Compile Include="DirectXHook\Hook\BaseDXHook.cs" />
     <Compile Include="DirectXHook\Hook\Common\Element.cs" />
@@ -102,8 +103,12 @@
     <Compile Include="DirectXHook\Hook\IDXHook.cs" />
     <Compile Include="DirectXHook\Hook\SafeHGlobal.cs" />
     <Compile Include="DirectXHook\NativeMethods.cs" />
+    <Compile Include="OpenCV\FindPedestrian.cs" />
+    <Compile Include="OpenCV\Gradients.cs" />
+    <Compile Include="OpenCV\LaneTracker.cs" />
+    <Compile Include="OpenCV\OpenCVUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Test.cs" />
+    <Compile Include="Main.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="DirectXHook\sharpdx_direct3d11_effects_x64.dll" />

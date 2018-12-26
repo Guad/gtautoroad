@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using GTANetwork.GUI.DirectXHook.Hook.Common;
-using GTANetworkShared;
+
 using SharpDX;
 using SharpDX.Direct3D11;
 using Device = SharpDX.Direct3D11.Device;

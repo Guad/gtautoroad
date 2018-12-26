@@ -7,7 +7,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Threading;
-using EasyHook;
+
 
 namespace GTANetwork.GUI.DirectXHook.Hook
 {
@@ -35,7 +35,7 @@ namespace GTANetwork.GUI.DirectXHook.Hook
             {
                 if (_processId == 0)
                 {
-                    _processId = RemoteHooking.GetCurrentProcessId();
+                    //_processId = RemoteHooking.GetCurrentProcessId();
                 }
                 return _processId;
             }

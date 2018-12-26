@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using EasyHook;
+
 
 namespace GTANetwork.GUI.DirectXHook.Hook
 {
@@ -57,7 +57,7 @@ namespace GTANetwork.GUI.DirectXHook.Hook
         /// <summary>
         /// The <see cref="EasyHook.LocalHook"/> instance
         /// </summary>
-        public LocalHook LocalHook { get; private set; }
+        //public LocalHook LocalHook { get; private set; }
         
         /// <summary>
         /// Indicates whether the hook is currently active
@@ -86,9 +86,9 @@ namespace GTANetwork.GUI.DirectXHook.Hook
 
         protected void CreateHook()
         {
-            if (LocalHook != null) return;
+            //if (LocalHook != null) return;
 
-            this.LocalHook = LocalHook.Create(FuncToHook, NewFunc, Owner);
+            //this.LocalHook = LocalHook.Create(FuncToHook, NewFunc, Owner);
         }
 
         protected void UnHook()
@@ -96,11 +96,6 @@ namespace GTANetwork.GUI.DirectXHook.Hook
             if (this.IsActive)
                 Deactivate();
 
-            if (this.LocalHook != null)
-            {
-                this.LocalHook.Dispose();
-                this.LocalHook = null;
-            }
         }
 
         /// <summary>
@@ -108,13 +103,7 @@ namespace GTANetwork.GUI.DirectXHook.Hook
         /// </summary>
         public void Activate()
         {
-            if (this.LocalHook == null)
-                CreateHook();
-
-            if (this.IsActive) return;
             
-            this.IsActive = true;
-            this.LocalHook.ThreadACL.SetExclusiveACL(new Int32[] { 0 });
         }
 
         /// <summary>
@@ -122,10 +111,8 @@ namespace GTANetwork.GUI.DirectXHook.Hook
         /// </summary>
         public void Deactivate()
         {
-            if (!this.IsActive) return;
 
-            this.IsActive = false;
-            this.LocalHook.ThreadACL.SetInclusiveACL(new Int32[] { 0 });
+
         }
 
 

@@ -118,64 +118,7 @@ namespace GTANetwork.GUI.DirectXHook.Hook
 
         public override void Hook()
         {
-            this.DebugMessage("Hook: Begin");
-            if (_d3d11VTblAddresses == null)
-            {
-                _d3d11VTblAddresses = new List<IntPtr>();
-                _dxgiSwapChainVTblAddresses = new List<IntPtr>();
-
-                #region Get Device and SwapChain method addresses
-                // Create temporary device + swapchain and determine method addresses
-                _renderForm = Collect(new SharpDX.Windows.RenderForm());
-                DebugMessage("Hook: Before device creation");
-                SharpDX.Direct3D11.Device.CreateWithSwapChain(
-                    DriverType.Hardware,
-                    DeviceCreationFlags.BgraSupport,
-                    DXGI.CreateSwapChainDescription(_renderForm.Handle),
-                    out _device,
-                    out _swapChain);
-
-                Collect(_device);
-                Collect(_swapChain);
-
-                if (_device != null && _swapChain != null)
-                {
-                    DebugMessage("Hook: Device created");
-                    _d3d11VTblAddresses.AddRange(GetVTblAddresses(_device.NativePointer, D3D11_DEVICE_METHOD_COUNT));
-                    _dxgiSwapChainVTblAddresses.AddRange(GetVTblAddresses(_swapChain.NativePointer, DXGI.DXGI_SWAPCHAIN_METHOD_COUNT));
-                }
-                else
-                {
-                    DebugMessage("Hook: Device creation failed");
-                }
-                #endregion
-            }
-
-            // We will capture the backbuffer here
-            DXGISwapChain_PresentHook = new Hook<DXGISwapChain_PresentDelegate>(
-                _dxgiSwapChainVTblAddresses[(int)DXGI.DXGISwapChainVTbl.Present],
-                new DXGISwapChain_PresentDelegate(PresentHook),
-                this);
-
-
-            // We will capture target/window resizes here
-            DXGISwapChain_ResizeTargetHook = new Hook<DXGISwapChain_ResizeTargetDelegate>(
-                _dxgiSwapChainVTblAddresses[(int)DXGI.DXGISwapChainVTbl.ResizeTarget],
-                new DXGISwapChain_ResizeTargetDelegate(ResizeTargetHook),
-                this);
-
-            /*
-             * Don't forget that all hooks will start deactivated...
-             * The following ensures that all threads are intercepted:
-             * Note: you must do this for each hook.
-             */
-            DXGISwapChain_PresentHook.Activate();
-
-            DXGISwapChain_ResizeTargetHook.Activate();
-
-            Hooks.Add(DXGISwapChain_PresentHook);
-            Hooks.Add(DXGISwapChain_ResizeTargetHook);
-            DebugMessage("EndofMain");
+            
         }
 
         public override void Cleanup()
@@ -278,7 +221,7 @@ namespace GTANetwork.GUI.DirectXHook.Hook
                     OverlayEngine.Overlays.Add(new Overlay());
                 }
 
-                OverlayEngine.Overlays[overlay].Elements.Add(element);
+                OverlayEngine.Overlays[overlay].Elements.Remove(element);
             }
         }
 
@@ -414,10 +357,12 @@ namespace GTANetwork.GUI.DirectXHook.Hook
                 }
                 catch (Exception e)
                 {
+
                     // If there is an error we do not want to crash the hooked application, so swallow the exception
                     //LogManager.DebugLog("PresentHook: Exeception: " + e.GetType().FullName + ": " + e.ToString());
                     //LogManager.LogException(e, "PresentHook");
                     //return unchecked((int)0x8000FFFF); //E_UNEXPECTED
+                    System.IO.File.AppendAllText("d3d.log", "Unexpected error on present:\n" + e);
                 }
             }
         }

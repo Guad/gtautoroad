@@ -1,43 +1,20 @@
-﻿using System;
-using GTA;
-using SharpDX;
+﻿using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-using SharpDX.Direct3D;
-using GTANetwork.GUI.DirectXHook.Hook;
-using GTANetwork.GUI.DirectXHook.Hook.Common;
-using System.Drawing.Imaging;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GrandTheftAutoroad
 {
-    public class Test : GTA.Script
+    public static class BackBuffer
     {
-        public Test()
+        public static Bitmap GetBitmap(this SwapChain swapchain)
         {
-            base.Tick += OnTick;
-            base.Present += OnPresent;
-
-            //_hooker = new DXHookD3D11(1920, 1080); // TODO: dont hardcode
-        }
-
-        //private DXHookD3D11 _hooker;
-        private bool _save;
-
-        private void OnTick(object sender, EventArgs e)
-        {
-            if (Game.IsControlJustPressed(0, Control.Context))
-            {
-                _save = true;
-                //_hooker.
-            }
-        }
-        
-        private void OnPresent(object sender, EventArgs e)
-        {
-            IntPtr swapchainPtr = (IntPtr) sender;
-            SwapChain swapchain = (SwapChain)swapchainPtr;
-
             var bb = swapchain.GetBackBuffer<Texture2D>(0);
             SharpDX.Direct3D11.Device dev = bb.Device;
 
@@ -65,7 +42,7 @@ namespace GrandTheftAutoroad
 
             // Create bitmap
             var bitmap = new System.Drawing.Bitmap(origDesc.Width, origDesc.Height, PixelFormat.Format32bppArgb);
-            var boundsRect = new Rectangle(0, 0, origDesc.Width, origDesc.Height);
+            var boundsRect = new System.Drawing.Rectangle(0, 0, origDesc.Width, origDesc.Height);
 
             var mapDest = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
             var sourcePtr = mapSource.DataPointer;
@@ -88,10 +65,7 @@ namespace GrandTheftAutoroad
             bitmap.UnlockBits(mapDest);
             dev.ImmediateContext.UnmapSubresource(screenTexture, 0);
 
-            bitmap.Save("screencapture.png");
-
-            //_hooker.ManualPresentHook(swapchainPtr);
+            return bitmap;
         }
-
     }
 }
