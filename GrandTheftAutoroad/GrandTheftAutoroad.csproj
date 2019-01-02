@@ -81,28 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackBuffer.cs" />
-    <Compile Include="DirectXHook\Exceptions.cs" />
-    <Compile Include="DirectXHook\Hook\BaseDXHook.cs" />
-    <Compile Include="DirectXHook\Hook\Common\Element.cs" />
-    <Compile Include="DirectXHook\Hook\Common\ImageElement.cs" />
-    <Compile Include="DirectXHook\Hook\Common\IOverlay.cs" />
-    <Compile Include="DirectXHook\Hook\Common\IOverlayElement.cs" />
-    <Compile Include="DirectXHook\Hook\Common\Overlay.cs" />
-    <Compile Include="DirectXHook\Hook\Common\TextElement.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\ContextState.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\DeviceManager.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\DXFont.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\DXImage.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\DXOverlayEngine.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\DXSprite.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\RendererBase.cs" />
-    <Compile Include="DirectXHook\Hook\DX11\ScreenAlignedQuadRenderer.cs" />
-    <Compile Include="DirectXHook\Hook\DXGI.cs" />
-    <Compile Include="DirectXHook\Hook\DXHookD3D11.cs" />
-    <Compile Include="DirectXHook\Hook\Hook.cs" />
-    <Compile Include="DirectXHook\Hook\IDXHook.cs" />
-    <Compile Include="DirectXHook\Hook\SafeHGlobal.cs" />
-    <Compile Include="DirectXHook\NativeMethods.cs" />
     <Compile Include="OpenCV\FindPedestrian.cs" />
     <Compile Include="OpenCV\Gradients.cs" />
     <Compile Include="OpenCV\LaneTracker.cs" />
@@ -111,7 +89,6 @@
     <Compile Include="Main.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DirectXHook\sharpdx_direct3d11_effects_x64.dll" />
     <Content Include="License-LGPL.txt" />
   </ItemGroup>
   <ItemGroup>
