@@ -8,10 +8,13 @@ namespace GrandTheftAutoroad.OpenCV
     {
         private static PointF[] _origin = new PointF[]
         {
-            new PointF(350, 300), // top left
-            new PointF(470, 300), // top right
-            new PointF(0, 430), // bottom left
-            new PointF(799, 430), // bottom right
+            new PointF(350, 315), // top left
+            new PointF(460, 315), // top right
+
+            new PointF(0, 450), // bottom left
+            new PointF(799, 450), // bottom right
+
+            // 510
         };
 
         // 800x600

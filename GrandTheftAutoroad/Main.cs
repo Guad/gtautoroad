@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Drawing;
 using GTA.Native;
 using Vector3 = GTA.Math.Vector3;
+using GrandTheftAutoroad.OpenCV;
 
 namespace GrandTheftAutoroad
 {
@@ -19,6 +20,9 @@ namespace GrandTheftAutoroad
             base.Tick += OnTick;
             base.Present += OnPresent;
 
+            _tracker = new LaneTracker();
+
+            /*
             // Get screen resolution
 
             int width, height;
@@ -27,12 +31,14 @@ namespace GrandTheftAutoroad
             {
                 Function.Call(Hash._GET_SCREEN_ACTIVE_RESOLUTION, &width, &height);
             }
+            */
         }
 
         private bool _toggle;
         private Camera _camera;
-        private Vector3 _offset = new Vector3(0f, 1f, 0.7f);
+        private Vector3 _offset = new Vector3(0f, 1f, 1f);
         private Vector3 _rot;
+        private LaneTracker _tracker;
 
         private void OnTick(object sender, EventArgs e)
         {
@@ -74,8 +80,13 @@ namespace GrandTheftAutoroad
 
                 if (_toggle && _camera == null)
                 {
-                    _camera = World.CreateCamera(Game.Player.Character.Position, new GTA.Math.Vector3(), 90f);
+                    _camera = World.CreateCamera(Game.Player.Character.Position, new GTA.Math.Vector3(), 30f);
                     _camera.AttachTo(Game.Player.Character, _offset);
+                }
+                else if (!_toggle)
+                {
+                    _camera.Destroy();
+                    _camera = null;
                 }
 
                 World.RenderingCamera = _toggle ? _camera : null;
@@ -90,7 +101,6 @@ namespace GrandTheftAutoroad
 
             if (_toggle)
             {
-                //_camera.Position = Game.Player.Character.GetOffsetInWorldCoords(_offset);
                 _camera.Rotation = new GTA.Math.Vector3(_rot.X, _rot.Y, Game.Player.Character.Rotation.Z);
             }
         }
@@ -105,7 +115,7 @@ namespace GrandTheftAutoroad
                 if (_toggle)
                 {
                     var opencvImage = swapchain.GetImage();
-                    var output = OpenCV.LaneTracker.DetectLanes(opencvImage);
+                    var output = _tracker.DetectLanes(opencvImage);
 
                     swapchain.FromImage(output);
 
