@@ -1,5 +1,6 @@
 ﻿using System;
 using GTA;
+using GTA.Math;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
@@ -7,6 +8,7 @@ using SharpDX.Direct3D;
 using System.Drawing.Imaging;
 using System.Drawing;
 using GTA.Native;
+using Vector3 = GTA.Math.Vector3;
 
 namespace GrandTheftAutoroad
 {
@@ -28,9 +30,9 @@ namespace GrandTheftAutoroad
         }
 
         private bool _toggle;
-
-        internal static int _min = 20;
-        internal static int _max = 100;
+        private Camera _camera;
+        private Vector3 _offset = new Vector3(0f, 1f, 0.7f);
+        private Vector3 _rot;
 
         private void OnTick(object sender, EventArgs e)
         {
@@ -64,36 +66,32 @@ namespace GrandTheftAutoroad
             Function.Call(Hash.DISPLAY_CASH, false);
 
             Function.Call(Hash.HIDE_HELP_TEXT_THIS_FRAME);
+            Function.Call(Hash.STOP_GAMEPLAY_CAM_SHAKING, true);
 
             if (Game.IsControlJustPressed(0, Control.Context))
             {
                 _toggle = !_toggle;
+
+                if (_toggle && _camera == null)
+                {
+                    _camera = World.CreateCamera(Game.Player.Character.Position, new GTA.Math.Vector3(), 90f);
+                    _camera.AttachTo(Game.Player.Character, _offset);
+                }
+
+                World.RenderingCamera = _toggle ? _camera : null;
                 UI.Notify("Mod status: " + _toggle);
+                Function.Call(Hash.DISPLAY_RADAR, !_toggle);
             }
 
-            if (Game.IsControlJustPressed(0, Control.PhoneDown))
+            if (!Game.Player.Character.IsInVehicle())
             {
-                if (_min > 0) _min--;
-                UI.ShowSubtitle(string.Format("Min: {0} Max: {1}", _min, _max), 1000);
+                _toggle = false;
             }
 
-            if (Game.IsControlJustPressed(0, Control.PhoneUp))
+            if (_toggle)
             {
-                if (_min < 255) _min++;
-                UI.ShowSubtitle(string.Format("Min: {0} Max: {1}", _min, _max), 1000);
-            }
-
-            if (Game.IsControlJustPressed(0, Control.PhoneLeft))
-            {
-                if (_max > 0) _max--;
-                UI.ShowSubtitle(string.Format("Min: {0} Max: {1}", _min, _max), 1000);
-            }
-
-            if (Game.IsControlJustPressed(0, Control.PhoneRight))
-            {
-
-                if (_max < 255) _max++;
-                UI.ShowSubtitle(string.Format("Min: {0} Max: {1}", _min, _max), 1000);
+                //_camera.Position = Game.Player.Character.GetOffsetInWorldCoords(_offset);
+                _camera.Rotation = new GTA.Math.Vector3(_rot.X, _rot.Y, Game.Player.Character.Rotation.Z);
             }
         }
 
@@ -107,7 +105,7 @@ namespace GrandTheftAutoroad
                 if (_toggle)
                 {
                     var opencvImage = swapchain.GetImage();
-                    var output = OpenCV.LaneTracker.DetectLanes(opencvImage, null);
+                    var output = OpenCV.LaneTracker.DetectLanes(opencvImage);
 
                     swapchain.FromImage(output);
 

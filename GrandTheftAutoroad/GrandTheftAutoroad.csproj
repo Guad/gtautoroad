@@ -85,6 +85,7 @@
     <Compile Include="OpenCV\Gradients.cs" />
     <Compile Include="OpenCV\LaneTracker.cs" />
     <Compile Include="OpenCV\OpenCVUtil.cs" />
+    <Compile Include="OpenCV\Perspective.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main.cs" />
   </ItemGroup>

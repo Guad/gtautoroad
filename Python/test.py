@@ -116,9 +116,9 @@ def get_edges(image, separate_channels=False):
     # Get a color thresholding mask
     color_mask = color_threshold_mask(s_channel, threshold=(170, 255))
 
-    if not separate_channels:
-	    return gradient_mask
-        #return np.dstack((np.zeros_like(s_channel), gradient_mask, color_mask))
+    if separate_channels:
+	    #return gradient_mask
+        return np.dstack((np.zeros_like(s_channel), gradient_mask, color_mask))
     else:
         mask = np.zeros_like(gradient_mask)
         mask[(gradient_mask == 1) | (color_mask == 1)] = 1

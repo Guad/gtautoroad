@@ -14,19 +14,9 @@ namespace GrandTheftAutoroad.OpenCV
     public static class Gradients
     {
 
-        private static Image<T, byte> GradientAbsValueMask<T>(Image<T, float> source, Graphics dest, char axis = 'x', byte thresholdMin = 0, byte thresholdMax = 255)
+        private static Image<T, byte> GradientAbsValueMask<T>(Image<T, float> sobel, byte thresholdMin = 0, byte thresholdMax = 255)
             where T : struct, Emgu.CV.IColor
         {
-            int w = source.Width;
-            int h = source.Height;
-
-            var sobel = new Image<T, float>(w, h);
-
-            if (axis == 'x')
-                CvInvoke.Sobel(source, sobel, DepthType.Cv32F, 1, 0, kSize: 3);
-            else
-                CvInvoke.Sobel(source, sobel, DepthType.Cv32F, 0, 1, kSize: 3);
-
             float max = 0;
             sobel = sobel.Convert(s =>
             {
@@ -37,26 +27,14 @@ namespace GrandTheftAutoroad.OpenCV
 
             var sobel_scaled = sobel.Convert<byte>(f => (byte) ((f / max) * 255));
 
-            //var sobel_scaled = sobel.Convert<T, byte>();
-            //var sobel_scaled_u = sobel.Convert<byte>((o) => (byte)Math.Abs(o));
-
             Image<T, byte> mask = sobel_scaled.Convert<byte>((o) => (byte)(o >= thresholdMin && o <= thresholdMax ? 255 : 0));
 
             return mask;
         }
 
-        private static Image<T, byte> GradientMagnitudeMask<T>(Image<T, float> source, Graphics dest, byte thresholdMin = 0, byte thresholdMax = 255)
+        private static Image<T, byte> GradientMagnitudeMask<T>(Image<T, float> sobel_x, Image<T, float> sobel_y, byte thresholdMin = 0, byte thresholdMax = 255)
             where T : struct, Emgu.CV.IColor
         {
-            int w = source.Width;
-            int h = source.Height;
-
-            var sobel_x = new Image<T, float>(w, h);
-            var sobel_y = new Image<T, float>(w, h);
-
-            CvInvoke.Sobel(source, sobel_x, DepthType.Cv32F, 1, 0, kSize: 3);
-            CvInvoke.Sobel(source, sobel_y, DepthType.Cv32F, 0, 1, kSize: 3);
-
             // Calculate the magnitude
             Image<T, float> powers = sobel_x.Pow(2) + sobel_y.Pow(2);
 
@@ -76,18 +54,9 @@ namespace GrandTheftAutoroad.OpenCV
             return mask;
         }
 
-        private static Image<T, byte> GradientDirectionMask<T>(Image<T, float> source, Graphics dest, double thresholdMin = 0, double thresholdMax = Math.PI / 2)
+        private static Image<T, byte> GradientDirectionMask<T>(Image<T, float> sobel_x, Image<T, float> sobel_y, double thresholdMin = 0, double thresholdMax = Math.PI / 2)
             where T : struct, Emgu.CV.IColor
         {
-            int w = source.Width;
-            int h = source.Height;
-
-            var sobel_x = new Image<T, float>(w, h);
-            var sobel_y = new Image<T, float>(w, h);
-
-            CvInvoke.Sobel(source, sobel_x, DepthType.Cv32F, 1, 0, kSize: 3);
-            CvInvoke.Sobel(source, sobel_y, DepthType.Cv32F, 0, 1, kSize: 3);
-
             // Calculate the direction
 
             var direction = sobel_x.Convert(sobel_y, (sx, sy) => Math.Atan2(Math.Abs(sy), Math.Abs(sx)));
@@ -97,18 +66,18 @@ namespace GrandTheftAutoroad.OpenCV
             return mask;
         }
 
-        private static Image<T, byte> ColorThresholdMask<T>(Image<T, float> source, Graphics dest, double thresholdMin = 0, double thresholdMax = Math.PI / 2)
+        private static Image<T, byte> ColorThresholdMask<T>(Image<T, float> source, byte min = 0, byte max = 255)
             where T : struct, Emgu.CV.IColor
         {
             int w = source.Width;
             int h = source.Height;
 
-            Image<T, byte> mask = source.Convert<byte>((o) => (byte)(o >= thresholdMin && o <= thresholdMax ? 255 : 0));
+            Image<T, byte> mask = source.Convert<byte>((o) => (byte)(o >= min && o <= max ? 255 : 0));
 
             return mask;
         }
 
-        public static Image<Gray, byte> GetEdges(Image<Bgra, byte> source, Graphics dest)
+        public static Image<Gray, byte> GetEdges(Image<Bgra, byte> source)
         {
             int w = source.Width;
             int h = source.Height;
@@ -124,15 +93,24 @@ namespace GrandTheftAutoroad.OpenCV
 
             var s_channel = hls[2];
 
-            byte thresMin = (byte) Main._min;
-            byte thresMax = (byte) Main._max;
+            byte thresMin = 20;
+            byte thresMax = 100;
 
-            var gradient_x = GradientAbsValueMask(s_channel, dest, axis: 'x', thresholdMin: thresMin, thresholdMax: thresMax);
-            var gradient_y = GradientAbsValueMask(s_channel, dest, axis: 'y', thresholdMin: thresMin, thresholdMax: thresMax);
+            var sobel_x = new Image<Gray, float>(w, h);
+            var sobel_y = new Image<Gray, float>(w, h);
 
-            var magnitude = GradientMagnitudeMask(s_channel, dest, thresholdMin: thresMin, thresholdMax: thresMax);
+            CvInvoke.Sobel(s_channel, sobel_x, DepthType.Cv32F, 1, 0, kSize: 3);
+            CvInvoke.Sobel(s_channel, sobel_y, DepthType.Cv32F, 0, 1, kSize: 3);
 
-            var direction = GradientDirectionMask(s_channel, dest, thresholdMin: 0.7, thresholdMax: 1.3);
+
+            var gradient_x = GradientAbsValueMask(sobel_x, thresholdMin: thresMin, thresholdMax: thresMax);
+            var gradient_y = GradientAbsValueMask(sobel_y, thresholdMin: thresMin, thresholdMax: thresMax);
+
+            var magnitude = GradientMagnitudeMask(sobel_x, sobel_y, thresholdMin: thresMin, thresholdMax: thresMax);
+
+            var direction = GradientDirectionMask(sobel_x, sobel_y, thresholdMin: 0.7, thresholdMax: 1.3);
+
+            var color_mask = ColorThresholdMask(s_channel, min: 170, max: 255);
 
             Image<Gray, byte> gradient_mask = 
                 gradient_x.Convert(gradient_y, magnitude, direction, 
@@ -144,9 +122,12 @@ namespace GrandTheftAutoroad.OpenCV
                         return (byte)0;
                         });
 
-            gradient_mask = gradient_mask.Dilate(1).Erode(1);
-            
-            return gradient_mask;
+                        
+            var mask = gradient_mask.Convert(color_mask, (gm, cm) => (byte)(gm != 0 || cm != 0 ? 255 : 0));
+
+            //mask = mask.Dilate(1).Erode(1);
+
+            return mask;
         }
     }
 }

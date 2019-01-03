@@ -9,38 +9,30 @@ namespace GrandTheftAutoroad.OpenCV
 {
     public static class LaneTracker
     {
-        public static Emgu.CV.Image<Emgu.CV.Structure.Bgra, byte> DetectLanes(Image<Bgra, byte> source, Graphics dest)
+        public static Emgu.CV.Image<Emgu.CV.Structure.Bgra, byte> DetectLanes(Image<Bgra, byte> source)
         {
-            var mask = Gradients.GetEdges(source, dest);
-            return mask.Convert<Bgra, byte>();
+            Mat unwarp;
+            var newimg = Perspective.FlattenPerspective(source, out unwarp);
 
-            /*
-            int w = source.Width;
-            int h = source.Height;
+            source.ROI = new Rectangle(0, 0, 266, 200);
+            var persp_scaled = new Image<Bgra, byte>(source.ROI.Size);
+            CvInvoke.Resize(newimg, persp_scaled, source.ROI.Size);
 
-            var bgr = new Image<Rgb, byte>(w, h);
-            var hls = new Image<Hls, float>(w, h);
-
-
-            source.DrawString("Dep2a: " + hls.Mat.Depth, 300, 160, new Bgra(255, 255, 255, 255));
-
-            CvInvoke.CvtColor(source, bgr, ColorConversion.Bgra2Rgb);
-            CvInvoke.CvtColor(bgr, hls, ColorConversion.Rgb2Hls, 3);
-
-            hls.Mat.ConvertTo(hls, DepthType.Cv32F);
-
-            var sat = hls[2];
+            persp_scaled.Copy(source, new Image<Gray, byte>(persp_scaled.Width, persp_scaled.Height, new Gray(255)));
 
 
-            source.DrawString("Channels: " + bgr.NumberOfChannels, 100, 100, new Bgra(255, 255, 255, 255));
-            source.DrawString("Channel2: " + hls.NumberOfChannels, 100, 120, new Bgra(255, 255, 255, 255));
-            source.DrawString("Channel3: " + sat.NumberOfChannels, 100, 140, new Bgra(255, 255, 255, 255));
+            var mask = Gradients.GetEdges(newimg);
 
-            source.DrawString("Dep2: " + hls.Mat.Depth, 100, 160, new Bgra(255, 255, 255, 255));
-            source.DrawString("Dep3: " + sat.Mat.Depth, 100, 180, new Bgra(255, 255, 255, 255));
+            source.ROI = new Rectangle(266, 0, 266, 200);
+            var chns = mask.Convert<Bgra, byte>();
+            var chns_scaled = new Image<Bgra, byte>(source.ROI.Size);
+            CvInvoke.Resize(chns, chns_scaled, source.ROI.Size);
 
-            return sat.Convert<Bgra, byte>();
-            */
+            chns_scaled.Copy(source, new Image<Gray, byte>(chns_scaled.Width, chns_scaled.Height, new Gray(255)));
+
+            source.ROI = Rectangle.Empty;
+
+            return source;
         }
 
 
