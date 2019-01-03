@@ -24,7 +24,7 @@ namespace GrandTheftAutoroad.OpenCV
 
         public int MeanX { get; set; }
 
-        public int PixelsIn(Image<Gray, byte> img, bool debug = false)
+        public bool PixelsIn(Image<Gray, byte> img, bool debug = false)
         {
             int count = 0;
             int xc = 0;
@@ -56,7 +56,7 @@ namespace GrandTheftAutoroad.OpenCV
                 img.Draw(rect, new Gray(count > Tolerance ? 255 : 127), 5);
             }
 
-            return count;
+            return count > Tolerance;
         }
     }
 }

@@ -40,6 +40,11 @@ namespace GrandTheftAutoroad
         private Vector3 _rot;
         private LaneTracker _tracker;
 
+        private float _correction = 0f;
+
+        private int _pidMode = 0;
+        private string[] modenames = new[] { "Kp", "Ki", "Kd" };
+
         private void OnTick(object sender, EventArgs e)
         {
             World.CurrentDayTime = TimeSpan.FromHours(12);
@@ -80,8 +85,9 @@ namespace GrandTheftAutoroad
 
                 if (_toggle && _camera == null)
                 {
-                    _camera = World.CreateCamera(Game.Player.Character.Position, new GTA.Math.Vector3(), 30f);
-                    _camera.AttachTo(Game.Player.Character, _offset);
+                    _camera = World.CreateCamera(Game.Player.Character.Position + new Vector3(0, 0, 10f), new GTA.Math.Vector3(), 30f);
+                    //_camera.AttachTo(Game.Player.Character, _offset);
+                    //_camera.PointAt(Game.Player.Character);
                 }
                 else if (!_toggle)
                 {
@@ -101,7 +107,78 @@ namespace GrandTheftAutoroad
 
             if (_toggle)
             {
-                _camera.Rotation = new GTA.Math.Vector3(_rot.X, _rot.Y, Game.Player.Character.Rotation.Z);
+                _camera.Position = Game.Player.Character.Position + new Vector3(0, 0, 40f);
+                float h = Game.Player.Character.Rotation.Z;
+                _camera.Rotation = new GTA.Math.Vector3(-90f, 0, h);
+
+                Game.SetControlNormal(0, Control.VehicleMoveLeftRight, _correction);
+            }
+
+
+            float roc = 0.00001f;
+            if (Game.IsControlJustPressed(0, Control.PhoneLeft))
+            {
+                float newval = 0;
+                switch(_pidMode)
+                {
+                    case 0: // Kp
+                        _tracker.PID.KP -= roc;
+                        newval = _tracker.PID.KP;
+                        break;
+                    case 1: // Ki
+                        _tracker.PID.KI -= roc;
+                        newval = _tracker.PID.KI;
+                        break;
+                    case 2: // Kd
+                        _tracker.PID.KD -= roc;
+                        newval = _tracker.PID.KD;
+                        break;
+                }
+
+                UI.ShowSubtitle("[" + modenames[_pidMode] + "] = " + newval);
+            }
+
+            if (Game.IsControlJustPressed(0, Control.PhoneRight))
+            {
+                float newval = 0;
+                switch (_pidMode)
+                {
+                    case 0: // Kp
+                        _tracker.PID.KP += roc;
+                        newval = _tracker.PID.KP;
+                        break;
+                    case 1: // Ki
+                        _tracker.PID.KI += roc;
+                        newval = _tracker.PID.KI;
+                        break;
+                    case 2: // Kd
+                        _tracker.PID.KD += roc;
+                        newval = _tracker.PID.KD;
+                        break;
+                }
+
+                UI.ShowSubtitle("[" + modenames[_pidMode] + "] = " + newval);
+            }
+
+            if (Game.IsControlJustPressed(0, Control.PhoneUp))
+            {
+                _pidMode = (_pidMode - 1);
+                if (_pidMode < 0) _pidMode = 2;
+
+                UI.ShowSubtitle("PIDMODE: " + modenames[_pidMode]);
+            }
+
+            if (Game.IsControlJustPressed(0, Control.PhoneDown))
+            {
+                _pidMode = (_pidMode + 1) % 3;
+                UI.ShowSubtitle("PIDMODE: " + modenames[_pidMode]);
+            }
+
+
+            if (Game.IsControlJustPressed(0, Control.CreatorDelete))
+            {
+                _tracker = new LaneTracker();
+                UI.Notify("Settings reset!");
             }
         }
 
@@ -116,6 +193,7 @@ namespace GrandTheftAutoroad
                 {
                     var opencvImage = swapchain.GetImage();
                     var output = _tracker.DetectLanes(opencvImage);
+                    _correction = _tracker.CalculateCorrection();
 
                     swapchain.FromImage(output);
 

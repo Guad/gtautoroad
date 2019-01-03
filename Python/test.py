@@ -126,10 +126,14 @@ def get_edges(image, separate_channels=False):
 
 
 if __name__ == "__main__":
-	image = cv2.imread('test.png')
+	image = cv2.imread('test2.png')
 
-	chans = get_edges(image)
+	#chans = get_edges(image)
+	hls = cv2.cvtColor(np.copy(image), cv2.COLOR_RGB2HLS).astype(np.float)
+	s_channel = hls[:, :, 2]
+	cv2.Sobel(s_channel, cv2.CV_64F, 0, 1, ksize=3)
+	#chans = gradient_abs_value_mask(s_channel, axis='x')
 
-	cv2.imshow('image', chans)
+	cv2.imshow('image', s_channel)
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()

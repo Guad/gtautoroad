@@ -10,6 +10,8 @@ namespace GrandTheftAutoroad.OpenCV
 {
     public class LaneTracker
     {
+        public bool Visualization = true;
+
         private Window[] _l_windows;
         private Window[] _r_windows;
 
@@ -19,29 +21,38 @@ namespace GrandTheftAutoroad.OpenCV
 
         private const int _n_windows = 6;
 
+        private int _width;
+        public PIDController PID;
+
         public LaneTracker()
         {
-            
+            PID = new PIDController();
         }
 
         public Emgu.CV.Image<Emgu.CV.Structure.Bgra, byte> DetectLanes(Image<Bgra, byte> frame)
         {
-            var edges = Gradients.GetEdges(frame);
+            _width = frame.Width;
+            var edges = SimpleGradients.GetEdges(frame);
 
-            Mat unwarp;
-            var flatEdges = Perspective.FlattenPerspective(edges, out unwarp);
+            //return edges.Convert<Bgra, byte>();
+
+            //Mat unwarp;
+            //var flatEdges = Perspective.FlattenPerspective(edges, out unwarp);
+            var flatEdges = edges;
+
+            int h = frame.Height;
 
             // Initialize
             if (_l_windows == null)
             {
+                int w = frame.Width;
                 _l_windows = new Window[_n_windows];
                 _r_windows = new Window[_n_windows];
 
                 _r_positions = new Queue<int>[_n_windows];
                 _l_positions = new Queue<int>[_n_windows];
 
-                int h = frame.Height;
-                int w = frame.Width;
+                
                 int window_height = h / _n_windows;
 
                 for (int i = 0; i < _l_windows.Length; i++)
@@ -52,19 +63,19 @@ namespace GrandTheftAutoroad.OpenCV
                     _l_windows[i] = new Window()
                     {
                         Height = window_height,
-                        Y = h - i * window_height + window_height / 2,
-                        X = 100,
-                        Width = 200,
-                        Tolerance = 2000,
+                        Y = i * window_height + window_height / 2,
+                        X = w / 2 - 100,
+                        Width = 70,
+                        Tolerance = 270,
                     };
 
                     _r_windows[i] = new Window()
                     {
                         Height = window_height,
-                        Y = h - i * window_height + window_height / 2,
-                        X = w - 100,
-                        Width = 200,
-                        Tolerance = 2000,
+                        Y = i * window_height + window_height / 2,
+                        X = w /2 + 100,
+                        Width = 70,
+                        Tolerance = 270,
                     };
                 }
             }
@@ -87,8 +98,8 @@ namespace GrandTheftAutoroad.OpenCV
 
                 prevX = w.MeanX;
 
+                lanes.Draw(new CircleF(new PointF(prevX.Value, _l_windows[i].Y), 6f), new Bgra(0, 0, 255, 255), 10);
 
-                //lanes.Draw(new CircleF(new PointF(prevX.Value, _l_windows[i].Y), 6f), new Bgra(0, 0, 255, 255), 10);
                 _l_positions[i].Enqueue(w.MeanX);
                 if (_l_positions[i].Count > _history_count)
                     _l_positions[i].Dequeue();
@@ -112,7 +123,7 @@ namespace GrandTheftAutoroad.OpenCV
                 prevX = w.MeanX;
 
 
-                //lanes.Draw(new CircleF(new PointF(prevX.Value, _l_windows[i].Y), 6f), new Bgra(0, 0, 255, 255), 10);
+                lanes.Draw(new CircleF(new PointF(prevX.Value, _l_windows[i].Y), 6f), new Bgra(0, 0, 255, 255), 10);
                 _r_positions[i].Enqueue(w.MeanX);
                 if (_r_positions[i].Count > _history_count)
                     _r_positions[i].Dequeue();
@@ -124,24 +135,41 @@ namespace GrandTheftAutoroad.OpenCV
             lanes.FillConvexPoly(puntos.ToArray(), new Bgra(0, 255, 0, 255));
 
 
-            // Draw the lane
-            Image<Bgra, byte> unwarpedLanes = new Image<Bgra, byte>(frame.Size);
-            CvInvoke.WarpPerspective(lanes, unwarpedLanes, unwarp, frame.Size);
-            CvInvoke.AddWeighted(unwarpedLanes, 1, frame, 1, 0, frame);
+            if (Visualization)
+            {
+                // Draw the lane
+                //Image<Bgra, byte> unwarpedLanes = new Image<Bgra, byte>(frame.Size);
+                Image<Bgra, byte> unwarpedLanes = lanes;
+                //CvInvoke.WarpPerspective(lanes, unwarpedLanes, unwarp, frame.Size);
+                CvInvoke.AddWeighted(unwarpedLanes, 1, frame, 1, 0, frame);
 
 
-            // Visualize edges
-            frame.ROI = new Rectangle(0, 0, 266, 200);
-            var chns = flatEdges.Convert<Bgra, byte>();
-            var chns_scaled = new Image<Bgra, byte>(frame.ROI.Size);
-            CvInvoke.Resize(chns, chns_scaled, frame.ROI.Size);
+                // Visualize edges
+                frame.ROI = new Rectangle(0, 0, 266, 200);
+                var chns = flatEdges.Convert<Bgra, byte>();
+                var chns_scaled = new Image<Bgra, byte>(frame.ROI.Size);
+                CvInvoke.Resize(chns, chns_scaled, frame.ROI.Size);
 
-            chns_scaled.Copy(frame, new Image<Gray, byte>(chns_scaled.Width, chns_scaled.Height, new Gray(255)));
+                chns_scaled.Copy(frame, new Image<Gray, byte>(chns_scaled.Width, chns_scaled.Height, new Gray(255)));
 
-            frame.ROI = Rectangle.Empty;
+                frame.ROI = Rectangle.Empty;
+            }
 
             return frame;
             //return flatEdges.Convert<Bgra, byte>();
+        }
+
+        public float CalculateCorrection()
+        {
+            //return 0f;
+            int targetX = (_l_windows[0].MeanX + _r_windows[0].MeanX) / 2; // Target point
+            int currentX = _width / 2;
+            int error = targetX - currentX;
+
+            PID.PushValue(error);
+            
+
+            return PID.Control;
         }
 
     }
