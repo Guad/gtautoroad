@@ -15,14 +15,14 @@ namespace GrandTheftAutoroad.OpenCV
         public float KI { get; set; }
         public float KD { get; set; }
 
-        public PIDController()
+        public PIDController(float p, float i, float d)
         {
-            HistoryLength = 5;
+            HistoryLength = 30;
             _history = new Queue<float>();
 
-            KP = 0.01f;
-            KI = 0.0001f;
-            KD = 0.00f;
+            KP = p;
+            KI = i;
+            KD = d;
         }
 
         public float Proportional
@@ -45,7 +45,7 @@ namespace GrandTheftAutoroad.OpenCV
         {
             get
             {
-                return _history.Last() - _history.First();
+                return (_history.Last() - _history.First()) / _history.Count;
             }
         }
 

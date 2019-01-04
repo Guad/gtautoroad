@@ -45,7 +45,10 @@ namespace GrandTheftAutoroad.OpenCV
                 }
             }
 
-            if (count > Tolerance)
+            //int t = Tolerance;
+            int t = Main._tolerance;
+
+            if (count > t)
                 MeanX = xc / count;
             else
                 MeanX = X;
@@ -56,7 +59,7 @@ namespace GrandTheftAutoroad.OpenCV
                 img.Draw(rect, new Gray(count > Tolerance ? 255 : 127), 5);
             }
 
-            return count > Tolerance;
+            return count > t;
         }
     }
 }

@@ -30,8 +30,19 @@ namespace GrandTheftAutoroad.OpenCV
             var s_channel_thresh_blur = new Image<Gray, byte>(s_channel.Size);
             CvInvoke.Threshold(s_channel, s_channel_thresh, 70, 255, ThresholdType.Binary);
             CvInvoke.MedianBlur(s_channel_thresh, s_channel_thresh_blur, 3);
-            
-            return s_channel_thresh_blur;
+
+            var final = s_channel_thresh_blur.Dilate(3);
+
+
+            //370, 260
+            // 70x90
+            final.ROI = new System.Drawing.Rectangle(370, 260, 70, 90);
+
+            new Image<Gray, byte>(70, 90).Copy(final, new Image<Gray, byte>(70, 90, new Gray(255)));
+
+            final.ROI = System.Drawing.Rectangle.Empty;
+
+            return final;
         }
     }
 }

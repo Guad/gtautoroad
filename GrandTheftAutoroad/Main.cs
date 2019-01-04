@@ -22,16 +22,6 @@ namespace GrandTheftAutoroad
 
             _tracker = new LaneTracker();
 
-            /*
-            // Get screen resolution
-
-            int width, height;
-
-            unsafe
-            {
-                Function.Call(Hash._GET_SCREEN_ACTIVE_RESOLUTION, &width, &height);
-            }
-            */
         }
 
         private bool _toggle;
@@ -39,11 +29,11 @@ namespace GrandTheftAutoroad
         private Vector3 _offset = new Vector3(0f, 1f, 1f);
         private Vector3 _rot;
         private LaneTracker _tracker;
-
         private float _correction = 0f;
 
         private int _pidMode = 0;
         private string[] modenames = new[] { "Kp", "Ki", "Kd" };
+        internal static int _tolerance = 400;
 
         private void OnTick(object sender, EventArgs e)
         {
@@ -86,8 +76,6 @@ namespace GrandTheftAutoroad
                 if (_toggle && _camera == null)
                 {
                     _camera = World.CreateCamera(Game.Player.Character.Position + new Vector3(0, 0, 10f), new GTA.Math.Vector3(), 30f);
-                    //_camera.AttachTo(Game.Player.Character, _offset);
-                    //_camera.PointAt(Game.Player.Character);
                 }
                 else if (!_toggle)
                 {
@@ -97,7 +85,8 @@ namespace GrandTheftAutoroad
 
                 World.RenderingCamera = _toggle ? _camera : null;
                 UI.Notify("Mod status: " + _toggle);
-                Function.Call(Hash.DISPLAY_RADAR, !_toggle);
+                //Function.Call(Hash.DISPLAY_RADAR, !_toggle);
+                //Function.Call(Hash._SET_RADAR_BIGMAP_ENABLED, _toggle, false);
             }
 
             if (!Game.Player.Character.IsInVehicle())
@@ -112,10 +101,13 @@ namespace GrandTheftAutoroad
                 _camera.Rotation = new GTA.Math.Vector3(-90f, 0, h);
 
                 Game.SetControlNormal(0, Control.VehicleMoveLeftRight, _correction);
+
+                var v = Game.Player.Character.CurrentVehicle;
+                v.Speed = 10f;
             }
 
 
-            float roc = 0.00001f;
+            float roc = 0.0001f;
             if (Game.IsControlJustPressed(0, Control.PhoneLeft))
             {
                 float newval = 0;
@@ -159,7 +151,8 @@ namespace GrandTheftAutoroad
 
                 UI.ShowSubtitle("[" + modenames[_pidMode] + "] = " + newval);
             }
-
+            
+            /*
             if (Game.IsControlJustPressed(0, Control.PhoneUp))
             {
                 _pidMode = (_pidMode - 1);
@@ -173,13 +166,27 @@ namespace GrandTheftAutoroad
                 _pidMode = (_pidMode + 1) % 3;
                 UI.ShowSubtitle("PIDMODE: " + modenames[_pidMode]);
             }
+            
+            if (Game.IsControlJustPressed(0, Control.PhoneUp))
+            {
+                _tolerance += 10;
 
+                UI.ShowSubtitle("Tolerance: " + _tolerance);
+            }
 
+            if (Game.IsControlJustPressed(0, Control.PhoneDown))
+            {
+                _tolerance -= 10;
+                UI.ShowSubtitle("Tolerance: " + _tolerance);
+            }
+            */
             if (Game.IsControlJustPressed(0, Control.CreatorDelete))
             {
                 _tracker = new LaneTracker();
                 UI.Notify("Settings reset!");
             }
+
+
         }
 
         private void OnPresent(object sender, EventArgs e)
