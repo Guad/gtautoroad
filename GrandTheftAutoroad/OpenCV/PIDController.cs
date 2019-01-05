@@ -8,7 +8,7 @@ namespace GrandTheftAutoroad.OpenCV
 {
     public class PIDController
     {
-        private Queue<float> _history;
+        private LinkedQueueSingle _history;
         public int HistoryLength { get; set; }
 
         public float KP { get; set; }
@@ -18,7 +18,7 @@ namespace GrandTheftAutoroad.OpenCV
         public PIDController(float p, float i, float d)
         {
             HistoryLength = 30;
-            _history = new Queue<float>();
+            _history = new LinkedQueueSingle();
 
             KP = p;
             KI = i;

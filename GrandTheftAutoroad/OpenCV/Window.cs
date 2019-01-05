@@ -20,15 +20,16 @@ namespace GrandTheftAutoroad.OpenCV
         public int Width { get; set; } = 200;
         public int Height { get; set; }
 
-        public int Tolerance { get; set; } = 50;
+        public int Tolerance { get; set; }
 
         public int MeanX { get; set; }
 
-        public bool PixelsIn(Image<Gray, byte> img, bool debug = false)
+        public bool CountPixels(Image<Gray, byte> img, bool debug = false)
         {
             int count = 0;
             int xc = 0;
-            int yc = 0;
+
+            // The window rectangle
             var rect = new Rectangle(X - Width / 2, Y - Height / 2, Width, Height);
 
             
@@ -39,16 +40,13 @@ namespace GrandTheftAutoroad.OpenCV
                     if (img.Data[y, x, 0] != 0)
                     {
                         xc += x;
-                        yc += y;
                         count++;
                     }
                 }
             }
 
-            //int t = Tolerance;
-            int t = Main._tolerance;
-
-            if (count > t)
+            // If we got enough pixels, calculate the mean center of the window.
+            if (count > Tolerance)
                 MeanX = xc / count;
             else
                 MeanX = X;
@@ -59,7 +57,7 @@ namespace GrandTheftAutoroad.OpenCV
                 img.Draw(rect, new Gray(count > Tolerance ? 255 : 127), 5);
             }
 
-            return count > t;
+            return count > Tolerance;
         }
     }
 }

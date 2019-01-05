@@ -81,19 +81,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackBuffer.cs" />
-    <Compile Include="OpenCV\FindPedestrian.cs" />
-    <Compile Include="OpenCV\Gradients.cs" />
     <Compile Include="OpenCV\LaneTracker.cs" />
-    <Compile Include="OpenCV\OpenCVUtil.cs" />
-    <Compile Include="OpenCV\Perspective.cs" />
+    <Compile Include="OpenCV\LinkedQueue.cs" />
     <Compile Include="OpenCV\PIDController.cs" />
     <Compile Include="OpenCV\SimpleGradients.cs" />
     <Compile Include="OpenCV\Window.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Main.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="License-LGPL.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
