@@ -22,10 +22,10 @@ namespace GrandTheftAutoroad.OpenCV
         private int[] _corrections_l;
         private int[] _corrections_r;
 
+        private int[] _original_start;
+
         private int _screenWidth;
         private int _screenHeight;
-
-        private int[] _original_start;
 
         private const int HISTORY_SIZE = 20;
         private const int WINDOW_COUNT = 6;
@@ -103,8 +103,7 @@ namespace GrandTheftAutoroad.OpenCV
 
         public float CalculateCorrection()
         {
-            //return 0f;
-            float targetX = (float)((_positions_l[0].Average() + _positions_r[0].Average()) / 2f); // Target point
+            float targetX = ((_positions_l[0].Average() + _positions_r[0].Average()) / 2f); // Target point
             float currentX = _screenWidth / 2;
             float error = targetX - currentX;
 
