@@ -97,6 +97,8 @@ namespace GrandTheftAutoroad.OpenCV
                 chns.Dispose();
                 chns_scaled.Dispose();
             }
+            
+            edges.Dispose();
 
             return frame;
         }
